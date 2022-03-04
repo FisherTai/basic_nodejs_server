@@ -3,6 +3,7 @@ const { registerValidation, loginValidation } = require("../validation");
 const { User, Course } = require("../models/");
 const jwt = require("jsonwebtoken");
 
+const passport = require("passport");
 
 router.use((req, res, next) => {
   console.log("A request is coming in to auth.js");
@@ -52,7 +53,6 @@ router.post("/login", (req, res) => {
   }
 
   User.findOne({ email: req.body.email }, function (err, user) {
-
     if (err) {
       res.status(400).send(err);
     }
@@ -64,8 +64,13 @@ router.post("/login", (req, res) => {
           return res.status(400).send(err);
         }
         if (isMatch) {
-          const tokenObject = { _id: user._id, email: user.email ,role:user.role};
-          const token = jwt.sign(tokenObject, "ABCDEFGHIJK"); //TODO 因環境抓不到.env檔
+          const tokenObject = {
+            _id: user._id,
+            email: user.email,
+            role: user.role,
+          };
+
+          const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET); //TODO 因環境抓不到.env檔
           res.send({ success: true, token: "JWT " + token, user });
         } else {
           res.status(401).send("Wrong password");
@@ -74,5 +79,20 @@ router.post("/login", (req, res) => {
     }
   });
 });
+
+router.get(
+  "/auth/google",
+  passport.authenticate("google", {
+    scope: ["profile"], //get account info
+  })
+);
+
+router.get(
+  "auth/google/redirect",
+  passport.authenticate("google"),
+  (req, res) => {
+    res.redirect("/")//redirect page
+  }
+);
 
 module.exports = router;

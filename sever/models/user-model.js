@@ -14,6 +14,9 @@ const userSchema = new mongoose.Schema({
     minLength: 6,
     maxLength: 100,
   },
+  googleID:{
+    type: String,
+  },
   password: {
     type: String,
     required: true,
@@ -28,6 +31,9 @@ const userSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now,
+  },
+  thumbnail: {
+    type: String,
   },
 });
 

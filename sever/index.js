@@ -4,9 +4,11 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const { authRoute, courseRoute } = require("./routes");
 const passport = require("passport");
-require("./config/passport")(passport);
-
 dotenv.config();
+
+require("./config/passport").passport_jwt(passport);
+require("./config/passport").passport_oAuth_google(passport);
+
 
 mongoose
   .connect(process.env.DB_CONNECT, {
