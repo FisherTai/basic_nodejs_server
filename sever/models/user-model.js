@@ -35,6 +35,10 @@ const userSchema = new mongoose.Schema({
   thumbnail: {
     type: String,
   },
+  connected:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "GoogleUser",
+  }
 });
 
 userSchema.methods.isStudent = function () {
@@ -61,8 +65,6 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = function (password, cb) {
   bcrypt.compare(password, this.password, (err, isMatch) => {
-    console.log(`${password},${this.password}`);
-
     if (err) {
       return cb(err, isMatch);
     }

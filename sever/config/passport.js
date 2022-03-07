@@ -3,6 +3,7 @@ const JwtStrategy = require("passport-jwt").Strategy,
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
 
 const { User } = require("../models");
+const { GoogleUser } = require("../models");
 
 module.exports.passport_jwt = (passport) => {
   let opts = {};
@@ -11,6 +12,7 @@ module.exports.passport_jwt = (passport) => {
   passport.use(
     //此處的jwt_payload為jwt.sign()傳入的物件
     new JwtStrategy(opts, function (jwt_payload, done) {
+      console.log("JwtStrategy cb");
       User.findOne({ _id: jwt_payload._id }, function (err, user) {
         if (err) {
           return done(err, false);
@@ -34,9 +36,35 @@ module.exports.passport_oAuth_google = (passport) => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: "/api/user/auth/google/redirect",
       },
+      //檢查用戶profile是否已存在在資料庫
       function (accessToken, refreshToken, profile, cb) {
-        User.findOrCreate({ googleId: profile.id }, function (err, user) {
-          return cb(err, user);
+        console.log("GoogleStrategy cb");
+        // console.log(profile);
+        GoogleUser.findOne({ googleID: profile.id }).then((foundGoogleUser) => {
+          if (foundGoogleUser) {
+            console.log("User already exist");
+            cb(null, foundGoogleUser);
+          } else {
+            const newGoogleUser = new UserGoogle({
+              username: profile.displayName,
+              googleID: profile.id,
+              thumbnail: profile.photos[0].value,
+              email: profile.emails[0].value,
+              // connected:foundUser._id,
+            });
+            //TODO 關聯用戶，未完成
+            User.findOne({ email: profile.emails[0].value }).then(
+              (foundUser) => {
+                if (foundUser) {
+                  newGoogleUser.connected = foundUser._id;
+                }
+                newGoogleUser.save().then(() => {
+                  console.log("Nes user create.");
+                  cb(null.newUser);
+                });
+              }
+            );
+          }
         });
       }
     )

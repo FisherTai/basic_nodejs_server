@@ -1,9 +1,7 @@
 const router = require("express").Router();
 const { registerValidation, loginValidation } = require("../validation");
-const { User, Course } = require("../models/");
+const { User } = require("../models/");
 const jwt = require("jsonwebtoken");
-
-const passport = require("passport");
 
 router.use((req, res, next) => {
   console.log("A request is coming in to auth.js");
@@ -70,7 +68,7 @@ router.post("/login", (req, res) => {
             role: user.role,
           };
 
-          const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET); //TODO 因環境抓不到.env檔
+          const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
           res.send({ success: true, token: "JWT " + token, user });
         } else {
           res.status(401).send("Wrong password");
@@ -80,19 +78,5 @@ router.post("/login", (req, res) => {
   });
 });
 
-router.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile"], //get account info
-  })
-);
-
-router.get(
-  "auth/google/redirect",
-  passport.authenticate("google"),
-  (req, res) => {
-    res.redirect("/")//redirect page
-  }
-);
 
 module.exports = router;
