@@ -38,29 +38,31 @@ module.exports.passport_oAuth_google = (passport) => {
       },
       //檢查用戶profile是否已存在在資料庫
       function (accessToken, refreshToken, profile, cb) {
-        console.log("GoogleStrategy cb");
+        console.log("GoogleStrategy...");
         // console.log(profile);
         GoogleUser.findOne({ googleID: profile.id }).then((foundGoogleUser) => {
           if (foundGoogleUser) {
-            console.log("User already exist");
+            //Google login 
+            console.log(`${profile.emails[0].value} User already exist`);
             cb(null, foundGoogleUser);
           } else {
-            const newGoogleUser = new UserGoogle({
+            //Create google account in db
+            const newGoogleUser = new GoogleUser({
               username: profile.displayName,
               googleID: profile.id,
               thumbnail: profile.photos[0].value,
               email: profile.emails[0].value,
-              // connected:foundUser._id,
             });
             //TODO 關聯用戶，未完成
             User.findOne({ email: profile.emails[0].value }).then(
               (foundUser) => {
                 if (foundUser) {
+                  console.log(`Connect Account: ${foundUser.email}`);
                   newGoogleUser.connected = foundUser._id;
                 }
                 newGoogleUser.save().then(() => {
-                  console.log("Nes user create.");
-                  cb(null.newUser);
+                  console.log("New user create.");
+                  cb(null, newGoogleUser);
                 });
               }
             );

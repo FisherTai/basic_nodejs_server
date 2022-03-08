@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const { authRoute, courseRoute } = require("./routes");
+const { authRoute, courseRoute ,oAuthRoute} = require("./routes");
 const passport = require("passport");
 dotenv.config();
 
@@ -25,6 +25,7 @@ mongoose
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use("/api/user", authRoute);
+app.use("/api/user/auth", oAuthRoute);
 app.use("/api/courese", passport.authenticate("jwt", { session: false }), courseRoute);
 
 app.listen(8080, () => {
