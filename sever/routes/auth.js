@@ -13,12 +13,20 @@ router.get("/testApi", (req, res) => {
   return res.json(msgObj);
 });
 
-router.post("/register", async (req, res) => {
-  userController.register(req, res);
+router.post("/register", (req, res) => {
+  userController.register(req).then((result) => {
+    res.send(result.content);
+  }).catch((err) => {
+    res.status(err.statusCode).send(err.content);
+  });
 });
 
 router.post("/login", (req, res) => {
-  userController.login(req, res);
+  userController.login(req).then((result)=>{
+    res.send(result.content);
+  }).catch((err) => {
+    res.status(err.statusCode).send(err.content);
+  })
 });
 
 
