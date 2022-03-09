@@ -40,19 +40,19 @@ const googleUserSchema = new mongoose.Schema({
   },
 });
 
-userSchema.methods.isStudent = function () {
+googleUserSchema.methods.isStudent = function () {
   return this.role === "student";
 };
 
-userSchema.methods.instructor = function () {
+googleUserSchema.methods.instructor = function () {
   return this.role === "instructor";
 };
 
-userSchema.methods.isNoidentity = function () {
+googleUserSchema.methods.isNoidentity = function () {
   return this.role === "";
 };
 
-userSchema.methods.getConnectedId = function () {
+googleUserSchema.methods.getConnectedId = function () {
   return this.connected;
 };
 
