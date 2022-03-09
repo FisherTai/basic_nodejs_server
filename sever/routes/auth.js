@@ -29,5 +29,25 @@ router.post("/login", (req, res) => {
   })
 });
 
+//TODO 登入驗證Middleware，待測試
+const authCheck = (req, res, next) => {
+  console.log(req.originalUrl);
+  req.session.returnTo = req.originalUrl;
+  if (!req.isAuthenticated()) {
+    //尚未登入時，導向登入頁
+    res.redirect("/auth/login");
+  } else {
+    next();
+  }
+};
+
+//TODO 登出，待測試
+router.get('/logout', function(req, res) {
+  req.logout();
+  res.redirect('/');
+});
+
+
+
 
 module.exports = router;

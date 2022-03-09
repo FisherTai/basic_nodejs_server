@@ -4,6 +4,23 @@ const GoogleStrategy = require("passport-google-oauth20").Strategy;
 const userController = require("../controllers/user-controller");
 const { User } = require("../models");
 
+const passport = require("passport");
+
+//OAuth登入時將user data放入session
+passport.serializeUser((user,done) => {
+  console.log("Serializing user.");
+  done(null,user._id);
+});
+
+//將session內的user data取出放入req.user
+passport.deserializeUser((_id,done) => {
+  console.log("Deserializing user.");
+  User.findById({_id}).then(user => {
+    console.log("Found user.");
+    done(null,user);
+  })
+})
+
 module.exports.passport_jwt = (passport) => {
   let opts = {};
   opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme("jwt");
@@ -36,7 +53,7 @@ module.exports.passport_oAuth_google = (passport) => {
         callbackURL: "/api/user/auth/google/redirect",
       },
       //檢查用戶profile是否已存在在資料庫
-       async function (accessToken, refreshToken, profile, cb) {
+      async function (accessToken, refreshToken, profile, cb) {
         console.log("GoogleStrategy...");
         // console.log(profile);
         const user = await userController.googleAccountLogin(profile);
