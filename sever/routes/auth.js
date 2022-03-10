@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const userController = require("../controllers/user-controller");
+const {UserController} = require("../controllers");
 
 router.use((req, res, next) => {
   console.log("A request is coming in to auth.js");
@@ -14,7 +14,7 @@ router.get("/testApi", (req, res) => {
 });
 
 router.post("/register", (req, res) => {
-  userController.register(req).then((result) => {
+  UserController.register(req).then((result) => {
     res.send(result.content);
   }).catch((err) => {
     res.status(err.statusCode).send(err.content);
@@ -22,7 +22,7 @@ router.post("/register", (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-  userController.login(req).then((result)=>{
+  UserController.login(req).then((result)=>{
     res.send(result.content);
   }).catch((err) => {
     res.status(err.statusCode).send(err.content);

@@ -1,7 +1,7 @@
 const JwtStrategy = require("passport-jwt").Strategy,
   ExtractJwt = require("passport-jwt").ExtractJwt;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const userController = require("../controllers/user-controller");
+const UserController = require("../controllers/user-controller");
 const { User } = require("../models");
 
 const passport = require("passport");
@@ -56,7 +56,7 @@ module.exports.passport_oAuth_google = (passport) => {
       async function (accessToken, refreshToken, profile, cb) {
         console.log("GoogleStrategy...");
         // console.log(profile);
-        const user = await userController.googleAccountLogin(profile);
+        const user = await UserController.googleAccountLogin(profile);
         cb(null, user);
       }
     )
