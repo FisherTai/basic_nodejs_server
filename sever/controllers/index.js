@@ -1,3 +1,4 @@
+/* eslint-disable global-require */
 module.exports = {
-    UserController:require('./user-controller'),
-}
+  UserController: require("./user_controller"),
+};

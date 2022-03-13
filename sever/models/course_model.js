@@ -22,5 +22,4 @@ const courseSchema = new mongoose.Schema({
   },
 });
 
-
 module.exports = mongoose.model("Couse", courseSchema);

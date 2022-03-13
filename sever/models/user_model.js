@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ["student", "instructor"],
+    enum: ["normal", "vip"],
   },
   date: {
     type: Date,
@@ -53,19 +53,19 @@ userSchema.pre("save", async function (next) {
     this.password = hash;
     next();
   } else {
-    return next();
+    next();
   }
 });
 
 userSchema.methods.comparePassword = function (password, cb) {
   bcrypt.compare(password, this.password, (err, isMatch) => {
-    if(!this.password){
+    if (!this.password) {
       return cb("please try tot login using google", false);
     }
     if (err) {
       return cb(err, isMatch);
     }
-    cb(null, isMatch);
+    return cb(null, isMatch);
   });
 };
 

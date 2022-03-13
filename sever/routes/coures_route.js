@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 const router = require("express").Router();
 const { Course } = require("../models");
 const { courseValidation } = require("../validation");
@@ -7,6 +8,16 @@ router.use((req, res, next) => {
   next();
 });
 
+router.get("/test", (req, res) => {
+  req.logOut();
+  const msgObj = {
+    message: "Test APi Logout.",
+    user: req.user,
+    isLogin: req.isAuthenticated(),
+  };
+  return res.json(msgObj);
+});
+
 router.get("/", (req, res) => {
   Course.find({})
     .populate("instructor", ["username", "email"])
@@ -14,12 +25,13 @@ router.get("/", (req, res) => {
       res.send(course);
     })
     .catch((error) => {
+      console.log(error);
       res.state(500).send("Error");
     });
 });
 
 router.get("/:_id", (req, res) => {
-  let { _id } = req.params;
+  const { _id } = req.params;
   Course.findOne({ instructor: _id })
     .populate("instructor", ["email"])
     .then((course) => {
@@ -33,15 +45,17 @@ router.get("/:_id", (req, res) => {
 router.post("/", async (req, res) => {
   const { error } = courseValidation(req.body);
   if (error) {
-    return res.status(400).send(error.details[0].message);
+    res.status(400).send(error.details[0].message);
+    return;
   }
 
-  let { title, description, price } = req.body;
+  const { title, description, price } = req.body;
   if (req.user.isStudent()) {
-    return res.status(400).send("Only instructor can post a new course");
+    res.status(400).send("Only instructor can post a new course");
+    return;
   }
 
-  let newCourse = new Course({
+  const newCourse = new Course({
     title,
     description,
     price,
@@ -53,22 +67,25 @@ router.post("/", async (req, res) => {
     res.status(200).send("New Course has been saved");
   } catch (err) {
     console.log(err);
-    return res.status(400).send("Cannot save course");
+    res.status(400).send("Cannot save course");
   }
 });
 
 router.patch("/:_id", async (req, res) => {
   const { error } = courseValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
+  if (error) {
+    res.status(400).send(error.details[0].message);
+    return;
+  }
 
-  let { _id } = req.params;
-  let course = await Course.findOne({ _id });
+  const { _id } = req.params;
+  const course = await Course.findOne({ _id });
   if (!course) {
-    res.status(404);
-    return res.json({
+    res.status(404).json({
       success: false,
       message: "Course not found.",
     });
+    return;
   }
 
   if (course.instructor.equals(req.user._id) || req.user.isAdmin()) {
@@ -86,8 +103,7 @@ router.patch("/:_id", async (req, res) => {
         });
       });
   } else {
-    res.status(403).send;
-    return res.json({
+    res.status(403).json({
       success: false,
       message:
         "Only the instructor of this course or web admin can edit this course.",
@@ -96,11 +112,10 @@ router.patch("/:_id", async (req, res) => {
 });
 
 router.delete("/:_id", async (req, res) => {
-  let { _id } = req.params;
-  let course = await Course.findOne({ _id });
+  const { _id } = req.params;
+  const course = await Course.findOne({ _id });
   if (!course) {
-    res.status(404);
-    return res.json({
+    res.status(404).json({
       success: false,
       message: "Course not found.",
     });
@@ -108,9 +123,7 @@ router.delete("/:_id", async (req, res) => {
 
   if (course.instructor.equals(req.user._id) || req.user.isAdmin()) {
     Course.deleteOne({ _id })
-      .then(() => {
-        res.send("Course deleted");
-      })
+      .then(() => res.send("Course deleted"))
       .catch((err) => {
         res.send({
           success: false,
@@ -118,8 +131,7 @@ router.delete("/:_id", async (req, res) => {
         });
       });
   } else {
-    res.status(403).send;
-    return res.json({
+    res.status(403).json({
       success: false,
       message:
         "Only the instructor of this course or web admin can delete this course.",

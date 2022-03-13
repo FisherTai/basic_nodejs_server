@@ -1,4 +1,5 @@
+/* eslint-disable global-require */
 module.exports = {
-    User:require('./user-model'),
-    Course:require('./course-model'),
-}
+  User: require("./user_model"),
+  Course: require("./course_model"),
+};

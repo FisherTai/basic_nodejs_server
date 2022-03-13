@@ -1,15 +1,18 @@
 const express = require("express");
+
 const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const { authRoute, courseRoute ,oAuthRoute} = require("./routes");
 const passport = require("passport");
 const cookieSession = require("cookie-session");
+const { authRoute, courseRoute, oAuthRoute } = require("./routes");
+
 dotenv.config();
 
 require("./config/passport").passport_jwt(passport);
 require("./config/passport").passport_oAuth_google(passport);
-
+require("./config/passport").passport_serializeUser(passport);
+require("./config/passport").passport_deserializeUser(passport);
 
 mongoose
   .connect(process.env.DB_CONNECT, {
@@ -25,9 +28,9 @@ mongoose
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-/*cookieSession for google-oAuth*/
+/* cookieSession for google-oAuth */
 app.use(cookieSession({
-  keys:[process.env.PASSPORT_SECRET],
+  keys: [process.env.PASSPORT_SECRET],
 }));
 app.use(passport.initialize());
 app.use(passport.session());
