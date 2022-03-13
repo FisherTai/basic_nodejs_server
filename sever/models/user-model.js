@@ -36,11 +36,11 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.methods.isStudent = function () {
-  return this.role === "student";
+  return this.role === "normal";
 };
 
 userSchema.methods.instructor = function () {
-  return this.role === "instructor";
+  return this.role === "vip";
 };
 
 userSchema.methods.isAdmin = function () {
