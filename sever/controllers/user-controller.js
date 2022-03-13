@@ -1,7 +1,6 @@
 const router = require("express").Router();
 const { registerValidation, loginValidation } = require("../validation");
-const { User , GoogleUser } = require("../models/");
-
+const { User } = require("../models/");
 
 const jwt = require("jsonwebtoken");
 
@@ -22,23 +21,14 @@ const register = (req) => {
   return new Promise(async (resolve, reject) => {
     const { error } = registerValidation(req.body);
     if (error) {
-      reject(new resultObject(400, error.details[0].message));
+      return reject(new resultObject(400, error.details[0].message));
     }
 
     const emailExist = await User.findOne({ email: req.body.email });
     if (emailExist) {
-      reject(new resultObject(400, "Email has already been regestered"));
+      return reject(new resultObject(400, "Email has already been regestered"));
     }
 
-    const googleUserExist = await GoogleUser.findOne({ email: req.body.email });
-    if (googleUserExist) {
-      reject(
-        new resultObject(
-          400,
-          "already been regestered,please try to login using google account"
-        )
-      );
-    }
     //create user
     const newUser = new User({
       email: req.body.email,
@@ -49,7 +39,7 @@ const register = (req) => {
 
     try {
       const savedUser = await newUser.save();
-      resolve(
+      return resolve(
         new resultObject(200, {
           msg: "success",
           savedObject: savedUser,
@@ -57,7 +47,7 @@ const register = (req) => {
       );
     } catch (err) {
       console.log(err);
-      reject(new resultObject(400, "User not saved."));
+      return reject(new resultObject(400, "User not saved."));
     }
   });
 };
@@ -72,19 +62,19 @@ const login = (req) => {
   return new Promise((resolve, reject) => {
     const { error } = loginValidation(req.body);
     if (error) {
-      reject(new resultObject(400, error.details[0].message));
+      return reject(new resultObject(400, error.details[0].message));
     }
 
     User.findOne({ email: req.body.email }, function (err, user) {
       if (err) {
-        reject(new resultObject(400, err));
+        return reject(new resultObject(400, err));
       }
       if (!user) {
-        reject(new resultObject(401, "user not found"));
+        return reject(new resultObject(401, "user not found"));
       } else {
         user.comparePassword(req.body.password, function (err, isMatch) {
           if (err) {
-            reject(new resultObject(400, err));
+            return reject(new resultObject(400, err));
           }
           if (isMatch) {
             const tokenObject = {
@@ -93,7 +83,7 @@ const login = (req) => {
               role: user.role,
             };
             const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
-            resolve(
+            return resolve(
               new resultObject(200, {
                 success: true,
                 token: "JWT " + token,
@@ -101,7 +91,7 @@ const login = (req) => {
               })
             );
           } else {
-            reject(new resultObject(401, "Wrong password"));
+            return reject(new resultObject(401, "Wrong password"));
           }
         });
       }
@@ -111,39 +101,46 @@ const login = (req) => {
 
 const googleAccountLogin = (profile) => {
   return new Promise((resolve, reject) => {
-    GoogleUser.findOne({ googleID: profile.id }).then((foundGoogleUser) => {
-      if (foundGoogleUser) {
+    User.findOne({ googleID: profile.id }).then((foundUser) => {
+      if (foundUser) {
         //Google login
         console.log(`${profile.emails[0].value} User already exist`);
-        resolve(foundGoogleUser);
+        return resolve(foundUser);
       } else {
         //Create google account in db
-        const newGoogleUser = new GoogleUser({
+        const newUserBody = {
           username: profile.displayName,
           googleID: profile.id,
           thumbnail: profile.photos[0].value,
           email: profile.emails[0].value,
-        });
-        User.findOne({ email: profile.emails[0].value }).then((foundUser) => {
-          if (foundUser) {
-            //Connect DB User
-            console.log(`Connect Account: ${foundUser.email}`);
-            newGoogleUser.connected = foundUser._id;
-          }
-          newGoogleUser.save().then(() => {
-            console.log("New user create.");
-            resolve(newGoogleUser);
+        };
+        User.findOneAndUpdate({ email: profile.emails[0].value }, newUserBody, {
+          new: true,
+          runValidators: true,
+        })
+          .then((foundUser) => {
+            if (foundUser) {
+              console.log("User connected google.");
+              console.log(foundUser);
+              resolve(foundUser);
+            } else {
+              const newUser = User(newUserBody).save();
+              console.log(newUser);
+              resolve(newUser);
+            }
+          })
+          .catch((err) => {
+            console.log(err);
           });
-        });
       }
     });
   });
 };
 
-console.log
+console.log;
 
 module.exports = {
   login: login,
   register: register,
-  googleAccountLogin:googleAccountLogin,
+  googleAccountLogin: googleAccountLogin,
 };

@@ -14,19 +14,17 @@ const userSchema = new mongoose.Schema({
     minLength: 6,
     maxLength: 100,
   },
-  googleID:{
+  googleID: {
     type: String,
   },
   password: {
     type: String,
-    required: true,
     minLength: 6,
     maxLength: 1024,
   },
   role: {
     type: String,
-    enum: ["student","instructor"],
-    required: true,
+    enum: ["student", "instructor"],
   },
   date: {
     type: Date,
@@ -35,10 +33,6 @@ const userSchema = new mongoose.Schema({
   thumbnail: {
     type: String,
   },
-  connected:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "GoogleUser",
-  }
 });
 
 userSchema.methods.isStudent = function () {
@@ -54,7 +48,7 @@ userSchema.methods.isAdmin = function () {
 };
 
 userSchema.pre("save", async function (next) {
-  if (this.isModified("password") || this.isNew) {
+  if (this.password && (this.isModified("password") || this.isNew)) {
     const hash = await bcrypt.hash(this.password, 10);
     this.password = hash;
     next();
@@ -65,6 +59,9 @@ userSchema.pre("save", async function (next) {
 
 userSchema.methods.comparePassword = function (password, cb) {
   bcrypt.compare(password, this.password, (err, isMatch) => {
+    if(!this.password){
+      return cb("please try tot login using google", false);
+    }
     if (err) {
       return cb(err, isMatch);
     }
