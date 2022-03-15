@@ -2,13 +2,7 @@
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../validation");
 const { User } = require("../models");
-
-class ResultObject {
-  constructor(statusCode, content) {
-    this.statusCode = statusCode;
-    this.content = content;
-  }
-}
+const ResultObject = require("../resultObject");
 
 /**
  * Website register

@@ -5,10 +5,9 @@ const Joi = require("joi");
 const registerValidation = (data) => {
   const schema = Joi.object({
     username: Joi.string().min(3).max(50).required(),
-    email: Joi.string().min(6).max(100).required()
-      .email(),
+    email: Joi.string().min(6).max(100).required().email(),
     password: Joi.string().min(6).max(255).required(),
-    role: Joi.string().required().valid("normal"),
+    role: Joi.string().required().valid(["normal", "vip"]),
   });
 
   return schema.validate(data);
@@ -16,8 +15,7 @@ const registerValidation = (data) => {
 
 const loginValidation = (data) => {
   const schema = Joi.object({
-    email: Joi.string().min(6).max(100).required()
-      .email(),
+    email: Joi.string().min(6).max(100).required().email(),
     password: Joi.string().min(6).max(255).required(),
   });
 
@@ -34,6 +32,29 @@ const courseValidation = (data) => {
   return schema.validate(data);
 };
 
-module.exports.registerValidation = registerValidation;
-module.exports.loginValidation = loginValidation;
-module.exports.courseValidation = courseValidation;
+const productValidation = (data) => {
+  const schema = Joi.object({
+    product_name: Joi.string().min(2).max(30).required(),
+    product_price: Joi.number().min(10).max(2000).required(),
+    product_des: Joi.string().max(50).required(),
+    procuct_category: Joi.string().required().valid("normal"),
+    procuct_pic: Joi.string(),
+  });
+  return schema.validate(data);
+};
+
+const orderValidation = (data) => {
+  const schema = Joi.object({
+    user_id: Joi.string().required(),
+    product_id: Joi.string().required(),
+  });
+  return schema.validate(data);
+};
+
+module.exports = {
+  registerValidation,
+  loginValidation,
+  courseValidation,
+  productValidation,
+  orderValidation,
+};
