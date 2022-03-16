@@ -23,50 +23,49 @@ router.get("/", (req, res) => {
  * 依產品ID獲取產品
  */
 router.get("/:_id", (req, res) => {
-    const { _id } = req.params;
-    ProductController.getProduct(_id)
-      .then(({ statusCode, content }) => {
-        res.status(statusCode).send(content);
-      })
-      .catch(({ statusCode, content }) => {
-        res.status(statusCode).send(content);
-      });
-  });
+  const { _id } = req.params;
+  ProductController.getProduct(_id)
+    .then(({ statusCode, content }) => {
+      res.status(statusCode).send(content);
+    })
+    .catch(({ statusCode, content }) => {
+      res.status(statusCode).send(content);
+    });
+});
 
-  
 router.post("/", (req, res) => {
-    ProductController.createProduct(req.body)
-      .then(({ statusCode, content }) => {
-          console.log(`S:${ statusCode, content }`);
-        res.status(statusCode).send(content);
-      })
-      .catch(({ statusCode, content }) => {
-          //TODO 錯誤未處理
-        console.log(`F:${ statusCode, content }`);
-        res.status(statusCode).send(content);
-      });
-  });
+  ProductController.createProduct(req.body, (req.user && req.user.isAdmin()))
+    .then(({ statusCode, content }) => {
+      console.log(`S:${(statusCode, content)}`);
+      res.status(statusCode).send(content);
+    })
+    .catch((error) => {
+      // TODO 錯誤未處理
+      console.log(`createProduct:${error}`);
+      res.status(error.statusCode).send(error.content);
+    });
+});
 
-  router.patch("/:_id", (req, res) => {
-    const { _id } = req.params;
-    ProductController.editProduct(_id)
-      .then(({ statusCode, content }) => {
-        res.status(statusCode).send(content);
-      })
-      .catch(({ statusCode, content }) => {
-        res.status(statusCode).send(content);
-      });
-  });
+router.patch("/:_id", (req, res) => {
+  const { _id } = req.params;
+  ProductController.editProduct(_id, req.body, (req.user && req.user.isAdmin()))
+    .then(({ statusCode, content }) => {
+      res.status(statusCode).send(content);
+    })
+    .catch(({ statusCode, content }) => {
+      res.status(statusCode).send(content);
+    });
+});
 
-  router.delete("/", (req, res) => {
-    const { _id } = req.params;
-    ProductController.editProduct(_id)
-      .then(({ statusCode, content }) => {
-        res.status(statusCode).send(content);
-      })
-      .catch(({ statusCode, content }) => {
-        res.status(statusCode).send(content);
-      });
-  });
+router.delete("/:_id", (req, res) => {
+  const { _id } = req.params;
+  ProductController.deleteProduct(_id, (req.user && req.user.isHighest()))
+    .then(({ statusCode, content }) => {
+      res.status(statusCode).send(content);
+    })
+    .catch(({ statusCode, content }) => {
+      res.status(statusCode).send(content);
+    });
+});
 
-  module.exports = router;
+module.exports = router;

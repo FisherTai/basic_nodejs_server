@@ -17,7 +17,7 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   product_category: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: String,
     enum: ["money", "gift"],
   },
   product_pic: {
