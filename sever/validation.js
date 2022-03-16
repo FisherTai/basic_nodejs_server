@@ -37,7 +37,7 @@ const productValidation = (data) => {
     product_name: Joi.string().min(2).max(30).required(),
     product_price: Joi.number().min(10).max(2000).required(),
     product_des: Joi.string().max(50).required(),
-    procuct_category: Joi.string().required().valid("normal"),
+    product_category: Joi.string().required().valid(["money", "gift"]),
     procuct_pic: Joi.string(),
   });
   return schema.validate(data);
