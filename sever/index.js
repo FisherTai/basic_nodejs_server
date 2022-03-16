@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const passport = require("passport");
 const cookieSession = require("cookie-session");
-const { authRoute, courseRoute, oAuthRoute } = require("./routes");
+const { authRoute, courseRoute, oAuthRoute, productRoute } = require("./routes");
 
 dotenv.config();
 
@@ -38,6 +38,8 @@ app.use(passport.session());
 app.use("/api/user", authRoute);
 app.use("/api/user/auth", oAuthRoute);
 app.use("/api/courese", passport.authenticate("jwt", { session: false }), courseRoute);
+app.use("/api/product",productRoute);
+
 
 app.listen(8080, () => {
   console.log("Sever running");

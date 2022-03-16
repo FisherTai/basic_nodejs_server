@@ -2,23 +2,27 @@ const { productValidation } = require("../validation");
 const { Product } = require("../models");
 const ResultObject = require("../resultObject");
 
-const createProduct = (req) =>
+const createProduct = (body) =>
   new Promise((resolve, reject) => {
-    const { error } = productValidation(req.body);
+    const { error } = productValidation(body);
     if (error) {
       reject(new ResultObject(400, error.details[0].message));
       return;
     }
 
-    Product.findOne({ product_name: req.body.product_name }).then((product) => {
+    if (!isAdmin()) {
+      reject(new ResultObject(403, "Only Admin can Create Products"));
+    }
+
+    Product.findOne({ product_name: body.product_name }).then((product) => {
       if (product) {
         reject(new ResultObject(400, `${product.name} is already exist`));
       } else {
         const newProduct = new Product({
-          product_name: req.body.product_name,
-          product_price: req.body.product_price,
-          product_des: req.body.product_des,
-          product_category: req.body.product_category,
+          product_name: body.product_name,
+          product_price: body.product_price,
+          product_des: body.product_des,
+          product_category: body.product_category,
         });
 
         try {
@@ -91,17 +95,19 @@ const getProduct = (_id) =>
       });
   });
 
-const deleteProduct = (_id, isAdmin) =>
+const deleteProduct = (_id, isHighest) =>
   new Promise((resolve, reject) => {
-    if (isAdmin()) {
-      reject(new ResultObject(403, "Only Admin can delete Products"));
+    if (!isHighest()) {
+      reject(new ResultObject(403, "Only Highest Admin can delete Products"));
     } else {
       Product.deleteOne({ _id })
         .then((product) => {
-          resolve(new ResultObject(200, {
-            success: false,
-            message: `Product deleted : ${product}`,
-          }));
+          resolve(
+            new ResultObject(200, {
+              success: false,
+              message: `Product deleted : ${product}`,
+            })
+          );
         })
         .catch((error) => {
           reject(
@@ -113,3 +119,11 @@ const deleteProduct = (_id, isAdmin) =>
         });
     }
   });
+
+module.exports = {
+  createProduct,
+  editProduct,
+  getProduct,
+  getProducts,
+  deleteProduct,
+};
