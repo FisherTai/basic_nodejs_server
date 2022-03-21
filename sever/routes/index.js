@@ -4,4 +4,5 @@ module.exports = {
   courseRoute: require("./coures_route"),
   oAuthRoute: require("./o_auth"),
   productRoute: require("./product_route"),
+  orderRoute: require("./order_route"),
 };

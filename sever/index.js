@@ -10,6 +10,7 @@ const {
   courseRoute,
   oAuthRoute,
   productRoute,
+  orderRoute,
 } = require("./routes");
 
 dotenv.config();
@@ -50,6 +51,7 @@ app.use(
   courseRoute,
 );
 app.use("/api/product", productRoute);
+app.use("/api/product/", orderRoute);
 
 app.listen(8080, () => {
   console.log("Sever running");
