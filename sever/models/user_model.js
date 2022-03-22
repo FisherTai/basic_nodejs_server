@@ -33,6 +33,18 @@ const userSchema = new mongoose.Schema({
   thumbnail: {
     type: String,
   },
+  money: {
+    type: Number,
+    min: 0,
+    max: 100000,
+    default: 0,
+  },
+  products: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Product",
+    },
+  ],
 });
 
 userSchema.methods.isStudent = function () {
