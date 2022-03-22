@@ -1,6 +1,14 @@
 const router = require("express").Router();
 const { UserController } = require("../controllers");
 
+const handlePromise = (fn, res) => {
+  fn.then(({ statusCode, content }) => {
+    res.status(statusCode).send(content);
+  }).catch((err) => {
+    res.status(500).send(err);
+  });
+};
+
 router.use((req, res, next) => {
   console.log("A request is coming in to auth.js");
   next();
@@ -16,23 +24,11 @@ router.get("/testApi", (req, res) => {
 });
 
 router.post("/register", (req, res) => {
-  UserController.register(req)
-    .then((result) => {
-      res.send(result.content);
-    })
-    .catch((err) => {
-      res.status(err.statusCode).send(err.content);
-    });
+  handlePromise(UserController.register(req), res);
 });
 
 router.post("/login", (req, res) => {
-  UserController.login(req)
-    .then((result) => {
-      res.send(result.content);
-    })
-    .catch((err) => {
-      res.status(err.statusCode).send(err.content);
-    });
+  handlePromise(UserController.login(req), res);
 });
 
 // TODO 登入驗證Middleware，待測試

@@ -10,41 +10,36 @@ const ResultObject = require("../resultObject");
  * @param {*} res
  * @returns
  */
-const register = (req) => new Promise((resolve, reject) => {
+const register = async (req) => {
   const { error } = registerValidation(req.body);
   if (error) {
-    reject(new ResultObject(400, error.details[0].message));
-    return;
+    return new ResultObject(400, error.details[0].message);
   }
 
-  User.findOne({ email: req.body.email }).then((user) => {
-    if (user) {
-      reject(new ResultObject(400, "Email has already been regestered"));
-    } else {
-      // create user
-      const newUser = new User({
-        email: req.body.email,
-        username: req.body.username,
-        password: req.body.password,
-        role: req.body.role,
-      });
+  const user = await User.findOne({ email: req.body.email });
+  if (user) {
+    return new ResultObject(400, "Email has already been regestered");
+  } else {
+    // create user
+    const newUser = new User({
+      email: req.body.email,
+      username: req.body.username,
+      password: req.body.password,
+      role: req.body.role,
+    });
 
-      try {
-        newUser.save().then((savedUser) => {
-          resolve(
-            new ResultObject(200, {
-              msg: "success",
-              savedObject: savedUser,
-            }),
-          );
-        });
-      } catch (err) {
-        console.log(err);
-        reject(new ResultObject(400, "User not saved."));
-      }
+    try {
+      const savedUser =  await newUser.save();
+      return new ResultObject(200, {
+        msg: "success",
+        savedObject:  savedUser,
+      });
+    } catch (err) {
+      console.log(err);
+      return new ResultObject(400, "User not saved.");
     }
-  });
-});
+  }
+};
 
 /**
  * Website Login

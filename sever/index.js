@@ -51,7 +51,7 @@ app.use(
   courseRoute,
 );
 app.use("/api/product", productRoute);
-app.use("/api/product/", orderRoute);
+app.use("/api/order/", orderRoute);
 
 app.listen(8080, () => {
   console.log("Sever running");

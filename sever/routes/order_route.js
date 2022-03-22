@@ -18,3 +18,5 @@ router.post("/", (req, res) => {
       res.status(error.statusCode).send(error.content);
     });
 });
+
+module.exports = router;

@@ -1,6 +1,15 @@
 const router = require("express").Router();
 const { ProductController } = require("../controllers");
 
+const handlePromise = (fn, res) => {
+  fn.then(({ statusCode, content }) => {
+    console.log(`S:${(statusCode, content)}`);
+    res.status(statusCode).send(content);
+  }).catch((error) => {
+    res.status(500).send(error);
+  });
+};
+
 router.use((req, res, next) => {
   console.log("A request is coming into product route");
   next();
@@ -10,13 +19,7 @@ router.use((req, res, next) => {
  * 獲取產品清單
  */
 router.get("/", (req, res) => {
-  ProductController.getProducts()
-    .then(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    })
-    .catch(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    });
+  handlePromise(ProductController.getProducts(), res);
 });
 
 /**
@@ -24,48 +27,34 @@ router.get("/", (req, res) => {
  */
 router.get("/:_id", (req, res) => {
   const { _id } = req.params;
-  ProductController.getProduct(_id)
-    .then(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    })
-    .catch(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    });
+  handlePromise(ProductController.getProduct(_id), res);
 });
 
 router.post("/", (req, res) => {
-  ProductController.createProduct(req.body, (req.user && req.user.isAdmin()))
-    .then(({ statusCode, content }) => {
-      console.log(`S:${(statusCode, content)}`);
-      res.status(statusCode).send(content);
-    })
-    .catch((error) => {
-      // TODO 錯誤未處理
-      console.log(`createProduct:${error}`);
-      res.status(error.statusCode).send(error.content);
-    });
+  handlePromise(
+    ProductController.createProduct(req.body, req.user && req.user.isAdmin()),
+    res
+  );
 });
 
 router.patch("/:_id", (req, res) => {
   const { _id } = req.params;
-  ProductController.editProduct(_id, req.body, (req.user && req.user.isAdmin()))
-    .then(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    })
-    .catch(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    });
+  handlePromise(
+    ProductController.editProduct(
+      _id,
+      req.body,
+      req.user && req.user.isAdmin()
+    ),
+    res
+  );
 });
 
 router.delete("/:_id", (req, res) => {
   const { _id } = req.params;
-  ProductController.deleteProduct(_id, (req.user && req.user.isHighest()))
-    .then(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    })
-    .catch(({ statusCode, content }) => {
-      res.status(statusCode).send(content);
-    });
+  handlePromise(
+    ProductController.deleteProduct(_id, req.user && req.user.isHighest()),
+    res
+  );
 });
 
 module.exports = router;
