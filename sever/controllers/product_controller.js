@@ -31,7 +31,7 @@ const createProduct = async (body, isAdmin) => {
       msg: "success",
       product: saveProduct,
     });
-  } catch (error) {
+  } catch (err) {
     return new ResultObject(500, "Product not saved.");
   }
 };
@@ -46,25 +46,22 @@ const editProduct = async (_id, editContent, isAdmin) => {
     return new ResultObject(403, "Only Admin can update Products");
   }
 
-  const editProduct = await Product.findOneAndUpdate({ _id }, editContent, {
+  const editedProduct = await Product.findOneAndUpdate({ _id }, editContent, {
     new: true,
     runValidators: true,
   });
-  if (editProduct) {
-    return new ResultObject(200, `Product updated : ${editProduct}`);
-  } else {
-    return new ResultObject(404, "Product not found.");
+  if (editedProduct) {
+    return new ResultObject(200, `Product updated : ${editedProduct}`);
   }
+  return new ResultObject(404, "Product not found.");
 };
 
 const getProducts = async () => {
   try {
     const products = await Product.find({});
-    if (products) {
-      return new ResultObject(200, products);
-    }
+    return new ResultObject(200, products);
   } catch (err) {
-    console.log(error);
+    console.log(err);
     return new ResultObject(500, "Error");
   }
 };
@@ -74,9 +71,8 @@ const getProduct = async (_id) => {
     const product = await Product.findOne({ _id });
     if (product) {
       return new ResultObject(200, product);
-    } else {
-      return new ResultObject(404, "Product not found.");
     }
+    return new ResultObject(404, "Product not found.");
   } catch (err) {
     console.log(err);
     return new ResultObject(500, "Error");
