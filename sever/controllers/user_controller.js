@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../validation");
-const { User } = require("../models");
+const { User, Product } = require("../models");
 const ResultObject = require("../resultObject");
 
 /**
@@ -19,25 +19,24 @@ const register = async (req) => {
   const user = await User.findOne({ email: req.body.email });
   if (user) {
     return new ResultObject(400, "Email has already been regestered");
-  } else {
-    // create user
-    const newUser = new User({
-      email: req.body.email,
-      username: req.body.username,
-      password: req.body.password,
-      role: req.body.role,
-    });
+  }
+  // create user
+  const newUser = new User({
+    email: req.body.email,
+    username: req.body.username,
+    password: req.body.password,
+    role: req.body.role,
+  });
 
-    try {
-      const savedUser =  await newUser.save();
-      return new ResultObject(200, {
-        msg: "success",
-        savedObject:  savedUser,
-      });
-    } catch (err) {
-      console.log(err);
-      return new ResultObject(400, "User not saved.");
-    }
+  try {
+    const savedUser = await newUser.save();
+    return new ResultObject(200, {
+      msg: "success",
+      savedObject: savedUser,
+    });
+  } catch (err) {
+    console.log(err);
+    return new ResultObject(400, "User not saved.");
   }
 };
 
@@ -121,8 +120,31 @@ const googleAccountLogin = (profile) => new Promise((resolve) => {
   });
 });
 
+// TODO:未完成
+const buyProduct = async (email, productName) => {
+  try {
+    const updateUser = await User.findOne({ email });
+    const product = await Product.findOne({ product_name: productName });
+    if (!updateUser || !product) {
+      return new ResultObject(404, `Not found user or product`);
+    }
+    updateUser.money -= product.product_price;
+    updateUser.updateOne(
+      {
+        $addToSet: { products: product._id },
+        $set: { money: updateUser.money },
+      },
+    );
+    return new ResultObject(200, `updated success`);
+  } catch (err) {
+    console.log(err);
+    return new ResultObject(500, `update fail:${err}`);
+  }
+};
+
 module.exports = {
   login,
   register,
   googleAccountLogin,
+  buyProduct,
 };

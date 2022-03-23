@@ -31,6 +31,11 @@ router.post("/login", (req, res) => {
   handlePromise(UserController.login(req), res);
 });
 
+// 測試用
+router.post("/buy", (req, res) => {
+  handlePromise(UserController.buyProduct(req.body.email, req.body.productName), res);
+});
+
 // TODO 登入驗證Middleware，待測試
 // const authCheck = (req, res, next) => {
 //   console.log(req.originalUrl);

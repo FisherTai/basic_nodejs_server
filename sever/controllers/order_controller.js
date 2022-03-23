@@ -29,6 +29,9 @@ const createOrder = (body) => new Promise((resolve, reject) => {
   });
 
   try {
+    // 用戶的儲值金扣除
+    // 用戶的產品清單內加入產品
+    // 產生訂單明細
     newOrder.save().then((saveOrder) => {
       resolve(
         new ResultObject(200, {
