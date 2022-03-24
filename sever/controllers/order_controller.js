@@ -1,26 +1,23 @@
 /* eslint-disable camelcase */
 const { orderValidation } = require("../validation");
-const { Order, User, Product } = require("../models");
+const { Order } = require("../models");
 const ResultObject = require("../resultObject");
 
 // TODO
-const createOrder = (body) => new Promise((resolve, reject) => {
+const createOrder = async (body) => {
   const { error } = orderValidation(body);
   if (error) {
-    reject(new ResultObject(400, error.details[0].message));
-    return;
+    return new ResultObject(400, error.details[0].message);
   }
 
   const { user_id, product_id } = body;
 
   if (!user_id) {
-    reject(new ResultObject(401, { msg: "please login" }));
-    return;
+    return new ResultObject(401, { msg: "please login" });
   }
 
   if (!product_id) {
-    reject(new ResultObject(401, { msg: "not found this product" }));
-    return;
+    return new ResultObject(401, { msg: "not found this product" });
   }
 
   const newOrder = new Order({
@@ -29,93 +26,80 @@ const createOrder = (body) => new Promise((resolve, reject) => {
   });
 
   try {
-    // 用戶的儲值金扣除
-    // 用戶的產品清單內加入產品
-    // 產生訂單明細
-    newOrder.save().then((saveOrder) => {
-      resolve(
-        new ResultObject(200, {
-          msg: "success",
-          product: saveOrder,
-        }),
-      );
-      console.log(`create Order: ${saveOrder}`);
+    const saved = newOrder.save();
+    console.log(`create Order: ${saved}`);
+    return new ResultObject(200, {
+      msg: "success",
+      product: saved,
     });
   } catch (err) {
     console.log(err);
-    reject(new ResultObject(400, "Order not create."));
+    return new ResultObject(400, "Order not create.");
   }
-});
-const updateOrder = (_id, body, isAdmin) => new Promise((resolve, reject) => {
+};
+const updateOrder = async (_id, body, isAdmin) => {
   const { error } = orderValidation(body);
   if (error) {
-    reject(new ResultObject(400, error.details[0].message));
-    return;
+    return new ResultObject(400, error.details[0].message);
   }
-  Order.findOne({ _id }).then((order) => {
-    if (!order) {
-      reject(new ResultObject(404, "order not found."));
-    }
+
+  if (!isAdmin) {
+    return new ResultObject(403, "Only Admin can update order");
+  }
+
+  const updated = await Order.findOneAndUpdate({ _id }, body, {
+    new: true,
+    runValidators: true,
   });
-  if (isAdmin) {
-    Order.findOneAndUpdate({ _id }, body, {
-      new: true,
-      runValidators: true,
-    }).then((order) => {
-      resolve(new ResultObject(200, `order updated : ${order}`));
-    });
-  } else {
-    reject(new ResultObject(403, "Only Admin can update order"));
+
+  if (updated) {
+    return new ResultObject(200, `order updated : ${updated}`);
   }
-});
-const getOrders = () => new Promise((resolve, reject) => {
+
+  return new ResultObject(404, "order not found.");
+};
+
+const getOrders = async () => {
   Order.find({})
-    .then((order) => {
-      resolve(new ResultObject(200, order));
-    })
+    .then((order) => new ResultObject(200, order))
     .catch((error) => {
       console.log(error);
-      reject(new ResultObject(500, "Error"));
+      return new ResultObject(500, "Error");
     });
-});
+};
 
-const getOrder = (_id) => new Promise((resolve, reject) => {
+const getOrder = async (_id) => {
   Order.findOne({ _id })
     .then((order) => {
       if (order) {
-        resolve(new ResultObject(200, order));
-      } else {
-        reject(new ResultObject(404, "order not found."));
+        return new ResultObject(200, order);
       }
+      return new ResultObject(404, "order not found.");
     })
     .catch((error) => {
       console.log(error);
-      reject(new ResultObject(500, "Error"));
+      return new ResultObject(500, "Error");
     });
-});
-const deleteOrders = (_id, isHighest) => new Promise((resolve, reject) => {
+};
+
+const deleteOrders = async (_id, isHighest) => {
   if (!isHighest) {
-    reject(new ResultObject(403, "Only Highest Admin can delete order"));
-  } else {
-    Order.deleteOne({ _id })
-      .then((order) => {
-        resolve(
-          new ResultObject(200, {
-            success: true,
-            message: `order deleted : ${order}`,
-          }),
-        );
-      })
-      .catch((error) => {
-        reject(
-          new ResultObject(500, {
-            success: false,
-            message: error,
-          }),
-        );
-      });
+    return new ResultObject(403, "Only Highest Admin can delete order");
   }
-});
+
+  try {
+    const order = await Order.deleteOne({ _id });
+    return new ResultObject(200, {
+      success: true,
+      message: `order deleted : ${order}`,
+    });
+  } catch (error) {
+    return new ResultObject(500, {
+      success: false,
+      message: error,
+    });
+  }
+};
 
 module.exports = {
   createOrder,

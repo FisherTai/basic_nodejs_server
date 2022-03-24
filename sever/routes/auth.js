@@ -1,13 +1,6 @@
 const router = require("express").Router();
 const { UserController } = require("../controllers");
-
-const handlePromise = (fn, res) => {
-  fn.then(({ statusCode, content }) => {
-    res.status(statusCode).send(content);
-  }).catch((err) => {
-    res.status(500).send(err);
-  });
-};
+const { handlePromise } = require("../util");
 
 router.use((req, res, next) => {
   console.log("A request is coming in to auth.js");
@@ -29,11 +22,6 @@ router.post("/register", (req, res) => {
 
 router.post("/login", (req, res) => {
   handlePromise(UserController.login(req), res);
-});
-
-// 測試用
-router.post("/buy", (req, res) => {
-  handlePromise(UserController.buyProduct(req.body.email, req.body.productName), res);
 });
 
 // TODO 登入驗證Middleware，待測試

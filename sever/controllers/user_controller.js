@@ -120,7 +120,6 @@ const googleAccountLogin = (profile) => new Promise((resolve) => {
   });
 });
 
-// TODO:未完成
 const buyProduct = async (email, productName) => {
   try {
     const updateUser = await User.findOne({ email });
@@ -128,11 +127,10 @@ const buyProduct = async (email, productName) => {
     if (!updateUser || !product) {
       return new ResultObject(404, `Not found user or product`);
     }
-    updateUser.money -= product.product_price;
     updateUser.updateOne(
       {
         $addToSet: { products: product._id },
-        $set: { money: updateUser.money },
+        $set: { money: updateUser.money - product.product_price },
       },
     );
     return new ResultObject(200, `updated success`);
