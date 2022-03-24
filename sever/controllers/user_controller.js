@@ -71,6 +71,7 @@ const login = (req) => new Promise((resolve, reject) => {
           _id: user._id,
           email: user.email,
           role: user.role,
+          expiresIn: "7d",
         };
         const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
         return resolve(
@@ -120,12 +121,15 @@ const googleAccountLogin = (profile) => new Promise((resolve) => {
   });
 });
 
-const buyProduct = async (email, productName) => {
+const buyProduct = async (userId, productId) => {
   try {
-    const updateUser = await User.findOne({ email });
-    const product = await Product.findOne({ product_name: productName });
+    const updateUser = await User.findOne({ _id: userId });
+    const product = await Product.findOne({ _id: productId });
     if (!updateUser || !product) {
       return new ResultObject(404, `Not found user or product`);
+    }
+    if (updateUser.money < product.product_price) {
+      return new ResultObject(400, `Money not enough`);
     }
     updateUser.updateOne(
       {
@@ -133,7 +137,7 @@ const buyProduct = async (email, productName) => {
         $set: { money: updateUser.money - product.product_price },
       },
     );
-    return new ResultObject(200, `updated success`);
+    return new ResultObject(200, `user state update success`);
   } catch (err) {
     console.log(err);
     return new ResultObject(500, `update fail:${err}`);
