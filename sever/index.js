@@ -7,6 +7,7 @@ const passport = require("passport");
 const cookieSession = require("cookie-session");
 const server = require("http").createServer(app);
 const ioServer = require("socket.io")(server, { cors: { orgin: "*" } });
+const cors = require("cors");
 
 const {
   authRoute,
@@ -37,6 +38,7 @@ mongoose
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 /* cookieSession for google-oAuth */
 app.use(
   cookieSession({
