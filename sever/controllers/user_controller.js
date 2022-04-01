@@ -59,13 +59,14 @@ const login = (req) => new Promise((resolve, reject) => {
       return;
     }
     if (!user) {
-      reject(new ResultObject(401, "user not found"));
+      reject(new ResultObject(400, "user not found"));
       return;
     }
-    user.comparePassword(req.body.password, (compareErr, isMatch) => {
-      if (compareErr) {
-        return reject(new ResultObject(400, compareErr));
-      }
+    if (!user.password) {
+      reject(new ResultObject(400, "please try to login using google"));
+      return;
+    }
+    user.comparePassword(req.body.password, user.password).then((isMatch) => {
       if (isMatch) {
         const tokenObject = {
           _id: user._id,
@@ -74,7 +75,7 @@ const login = (req) => new Promise((resolve, reject) => {
           expiresIn: "7d",
         };
         const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
-        return resolve(
+        resolve(
           new ResultObject(200, {
             success: true,
             token: `JWT ${token}`,
@@ -82,8 +83,8 @@ const login = (req) => new Promise((resolve, reject) => {
           }),
         );
       }
-      return reject(new ResultObject(401, "Wrong password"));
-    });
+      reject(new ResultObject(401, "Wrong password"));
+    }).catch((compareErr) => reject(new ResultObject(400, compareErr)));
   });
 });
 
