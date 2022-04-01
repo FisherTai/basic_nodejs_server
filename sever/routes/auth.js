@@ -21,7 +21,7 @@ router.post("/register", (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-  handlePromise(UserController.login(req), res);
+  handlePromise(UserController.login(req.body), res);
 });
 
 // TODO 登入驗證Middleware，待測試

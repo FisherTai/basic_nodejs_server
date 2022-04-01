@@ -46,47 +46,40 @@ const register = async (req) => {
  * @param {*} res
  * @returns
  */
-const login = (req) => new Promise((resolve, reject) => {
-  const { error } = loginValidation(req.body);
+const login = async (body) => {
+  const { error } = loginValidation(body);
   if (error) {
-    reject(new ResultObject(400, error.details[0].message));
-    return;
+    return new ResultObject(400, error.details[0].message);
   }
 
-  User.findOne({ email: req.body.email }, (err, user) => {
-    if (err) {
-      reject(new ResultObject(400, err));
-      return;
-    }
+  try {
+    const user = await User.findOne({ email: body.email });
     if (!user) {
-      reject(new ResultObject(400, "user not found"));
-      return;
+      return new ResultObject(400, "user not found");
     }
     if (!user.password) {
-      reject(new ResultObject(400, "please try to login using google"));
-      return;
+      return new ResultObject(400, "please try to login using google");
     }
-    user.comparePassword(req.body.password, user.password).then((isMatch) => {
-      if (isMatch) {
-        const tokenObject = {
-          _id: user._id,
-          email: user.email,
-          role: user.role,
-          expiresIn: "7d",
-        };
-        const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
-        resolve(
-          new ResultObject(200, {
-            success: true,
-            token: `JWT ${token}`,
-            user,
-          }),
-        );
-      }
-      reject(new ResultObject(401, "Wrong password"));
-    }).catch((compareErr) => reject(new ResultObject(400, compareErr)));
-  });
-});
+    const isMatch = await user.comparePassword(body.password, user.password);
+    if (isMatch) {
+      const tokenObject = {
+        _id: user._id,
+        email: user.email,
+        role: user.role,
+        expiresIn: "7d",
+      };
+      const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
+      return new ResultObject(200, {
+        success: true,
+        token: `JWT ${token}`,
+        user,
+      });
+    }
+    return new ResultObject(401, "Wrong password");
+  } catch (err) {
+    return new ResultObject(500, err);
+  }
+};
 
 const googleAccountLogin = (profile) => new Promise((resolve) => {
   User.findOne({ googleID: profile.id }).then((foundUser) => {
