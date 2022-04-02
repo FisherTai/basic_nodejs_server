@@ -69,16 +69,13 @@ userSchema.pre("save", async function (next) {
   }
 });
 
-userSchema.methods.comparePassword = function (password, cb) {
-  bcrypt.compare(password, this.password, (err, isMatch) => {
-    if (!this.password) {
-      return cb("please try tot login using google", false);
-    }
+userSchema.methods.comparePassword = (pw, comparePw) => new Promise((resolve, reject) => {
+  bcrypt.compare(pw, comparePw, (err, isMatch) => {
     if (err) {
-      return cb(err, isMatch);
+      reject(new Error(err));
     }
-    return cb(null, isMatch);
+    resolve(isMatch);
   });
-};
+});
 
 module.exports = mongoose.model("User", userSchema);

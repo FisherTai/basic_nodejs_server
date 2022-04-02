@@ -5,6 +5,10 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const passport = require("passport");
 const cookieSession = require("cookie-session");
+const server = require("http").createServer(app);
+const ioServer = require("socket.io")(server, { cors: { orgin: "*" } });
+const cors = require("cors");
+
 const {
   authRoute,
   courseRoute,
@@ -34,6 +38,7 @@ mongoose
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
 /* cookieSession for google-oAuth */
 app.use(
   cookieSession({
@@ -55,4 +60,18 @@ app.use("/api/order/", orderRoute);
 
 app.listen(8080, () => {
   console.log("Sever running");
+});
+
+// socket.io
+ioServer.listen(3001, () => {
+  console.log("ioServer running");
+});
+
+ioServer.on("connection", (socket) => {
+  console.log(`User connected: ${socket.id}`);
+
+  socket.on("message", (data) => {
+    console.log(`message:${socket.id} : ${data}`);
+    socket.broadcast.emit("message", data);
+  });
 });
