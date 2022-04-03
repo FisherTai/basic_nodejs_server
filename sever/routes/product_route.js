@@ -1,9 +1,9 @@
 const router = require("express").Router();
 const { ProductController } = require("../controllers");
-const { handlePromise } = require("../util");
+const { handleResponse } = require("../util");
 
 router.use((req, res, next) => {
-  console.log("A request is coming into product route");
+  console.log(`A request product route :${req.url}`);
   next();
 });
 
@@ -11,7 +11,7 @@ router.use((req, res, next) => {
  * 獲取產品清單
  */
 router.get("/", (req, res) => {
-  handlePromise(ProductController.getProducts(), res);
+  handleResponse(ProductController.getProducts(), res);
 });
 
 /**
@@ -19,11 +19,11 @@ router.get("/", (req, res) => {
  */
 router.get("/:_id", (req, res) => {
   const { _id } = req.params;
-  handlePromise(ProductController.getProduct(_id), res);
+  handleResponse(ProductController.getProduct(_id), res);
 });
 
 router.post("/", (req, res) => {
-  handlePromise(
+  handleResponse(
     ProductController.createProduct(req.body, req.user && req.user.isAdmin()),
     res,
   );
@@ -31,7 +31,7 @@ router.post("/", (req, res) => {
 
 router.patch("/:_id", (req, res) => {
   const { _id } = req.params;
-  handlePromise(
+  handleResponse(
     ProductController.editProduct(
       _id,
       req.body,
@@ -43,7 +43,7 @@ router.patch("/:_id", (req, res) => {
 
 router.delete("/:_id", (req, res) => {
   const { _id } = req.params;
-  handlePromise(
+  handleResponse(
     ProductController.deleteProduct(_id, req.user && req.user.isHighest()),
     res,
   );

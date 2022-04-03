@@ -1,4 +1,5 @@
 const ResultObject = require("./resultObject");
+const ResultObject2 = require("./result-object");
 
 const handlePromise = (fn, res) => {
   fn.then(({ statusCode, content }) => {
@@ -14,4 +15,19 @@ const handlePromise = (fn, res) => {
   });
 };
 
+const handleResponse = (fn, res) => {
+  fn.then((result) => {
+    console.log(result);
+    res.status(result.code).send(result);
+  }).catch((error) => {
+    console.log(error);
+    if (error instanceof ResultObject2) {
+      res.status(error.code).send(error);
+      return;
+    }
+    res.status(500).send("未預期錯誤");
+  });
+};
+
 module.exports.handlePromise = handlePromise;
+module.exports.handleResponse = handleResponse;
