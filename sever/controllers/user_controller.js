@@ -2,7 +2,8 @@
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../validation");
 const { User, Product } = require("../models");
-const ResultObject = require("../resultObject");
+const ResultObject = require("../result-object");
+const { ResultCode } = require("../result-code");
 
 /**
  * Website register
@@ -13,12 +14,12 @@ const ResultObject = require("../resultObject");
 const register = async (req) => {
   const { error } = registerValidation(req.body);
   if (error) {
-    return new ResultObject(400, error.details[0].message);
+    return new ResultObject(ResultCode.PARAM_ERROR, error.details[0].message);
   }
 
   const user = await User.findOne({ email: req.body.email });
   if (user) {
-    return new ResultObject(400, "Email has already been regestered");
+    return new ResultObject(ResultCode.USER_EMAIL_EXIST);
   }
   // create user
   const newUser = new User({
@@ -30,13 +31,10 @@ const register = async (req) => {
 
   try {
     const savedUser = await newUser.save();
-    return new ResultObject(200, {
-      msg: "success",
-      savedObject: savedUser,
-    });
+    return new ResultObject(ResultCode.SUCCESS, savedUser);
   } catch (err) {
     console.log(err);
-    return new ResultObject(400, "User not saved.");
+    return new ResultObject(ResultCode.UNEXPECTED_ERROR);
   }
 };
 
@@ -49,16 +47,16 @@ const register = async (req) => {
 const login = async (body) => {
   const { error } = loginValidation(body);
   if (error) {
-    return new ResultObject(400, error.details[0].message);
+    return new ResultObject(ResultCode.PARAM_ERROR, error.details[0].message);
   }
 
   try {
     const user = await User.findOne({ email: body.email });
     if (!user) {
-      return new ResultObject(400, "user not found");
+      return new ResultObject(ResultCode.USER_NOT_FOUND);
     }
     if (!user.password) {
-      return new ResultObject(400, "please try to login using google");
+      return new ResultObject(ResultCode.USER_TRY_GOOGLE);
     }
     const isMatch = await user.comparePassword(body.password, user.password);
     if (isMatch) {
@@ -69,24 +67,25 @@ const login = async (body) => {
         expiresIn: "7d",
       };
       const token = jwt.sign(tokenObject, process.env.PASSPORT_SECRET);
-      return new ResultObject(200, {
-        success: true,
+      return new ResultObject(ResultCode.SUCCESS, {
         token: `JWT ${token}`,
         user,
       });
     }
-    return new ResultObject(401, "Wrong password");
+    return new ResultObject(ResultCode.USER_WRONG_PASSWORD);
   } catch (err) {
-    return new ResultObject(500, err);
+    return new ResultObject(ResultCode.UNEXPECTED_ERROR);
   }
 };
 
-const googleAccountLogin = (profile) => new Promise((resolve) => {
-  User.findOne({ googleID: profile.id }).then((foundUser) => {
+const googleAccountLogin = async (profile) => {
+  try {
+    const foundUser = await User.findOne({ googleID: profile.id });
+
     if (foundUser) {
       // Google login
       console.log(`${profile.emails[0].value} User already exist`);
-      return resolve(foundUser);
+      return foundUser;
     }
     // Create google account in db
     const newUserBody = {
@@ -95,46 +94,56 @@ const googleAccountLogin = (profile) => new Promise((resolve) => {
       thumbnail: profile.photos[0].value,
       email: profile.emails[0].value,
     };
-    User.findOneAndUpdate({ email: profile.emails[0].value }, newUserBody, {
-      new: true,
-      runValidators: true,
-    })
-      .then((foundUpdateUser) => {
-        if (foundUpdateUser) {
-          console.log(`User connected google. \n${foundUpdateUser}`);
-          return resolve(foundUpdateUser);
-        }
-        const newUser = User(newUserBody).save();
-        console.log(newUser);
-        return resolve(newUser);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-    return null;
-  });
-});
+
+    const foundUpdateUser = await User.findOneAndUpdate(
+      { email: profile.emails[0].value },
+      newUserBody,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (foundUpdateUser) {
+      console.log(`User connected google. \n${foundUpdateUser}`);
+      return foundUpdateUser;
+    }
+    const newUser = await User(newUserBody).save();
+    console.log(newUser);
+    return newUser;
+  } catch (err) {
+    console.log(err);
+  }
+  return null;
+};
 
 const buyProduct = async (userId, productId) => {
   try {
-    const updateUser = await User.findOne({ _id: userId });
-    const product = await Product.findOne({ _id: productId });
+    // const updateUser = await User.findOne({ _id: userId });
+    // const product = await Product.findOne({ _id: productId });
+    // 兩個await同時進行
+    const [updateUser, product] = await Promise.all([User.findOne({ _id: userId }),
+      Product.findOne({ _id: productId })]);
+
     if (!updateUser || !product) {
-      return new ResultObject(404, `Not found user or product`);
+      return new ResultObject(ResultCode.ORDER_DATA_ERROR);
     }
+
     if (updateUser.money < product.product_price) {
-      return new ResultObject(400, `Money not enough`);
+      return new ResultObject(ResultCode.USER_MONEY_ENOUGH);
     }
-    updateUser.updateOne(
+
+    await updateUser.updateOne(
       {
         $addToSet: { products: product._id },
         $set: { money: updateUser.money - product.product_price },
       },
     );
-    return new ResultObject(200, `user state update success`);
+
+    return new ResultObject(ResultCode.SUCCESS);
   } catch (err) {
     console.log(err);
-    return new ResultObject(500, `update fail:${err}`);
+    return new ResultObject(ResultCode.UNEXPECTED_ERROR);
   }
 };
 

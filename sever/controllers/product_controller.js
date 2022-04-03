@@ -10,7 +10,7 @@ const createProduct = async (body, isAdmin) => {
   }
 
   if (!isAdmin) {
-    return new ResultObject(ResultCode.PRODUCT_NEED_ADMIN_PERMISSION);
+    return new ResultObject(ResultCode.NEED_ADMIN_PERMISSION);
   }
 
   const product = await Product.findOne({ product_name: body.product_name });
@@ -41,7 +41,7 @@ const editProduct = async (_id, editContent, isAdmin) => {
   }
 
   if (!isAdmin) {
-    return new ResultObject(ResultCode.PRODUCT_NEED_ADMIN_PERMISSION);
+    return new ResultObject(ResultCode.NEED_ADMIN_PERMISSION);
   }
 
   const editedProduct = await Product.findOneAndUpdate({ _id }, editContent, {
@@ -79,7 +79,7 @@ const getProduct = async (_id) => {
 
 const deleteProduct = async (_id, isHighest) => {
   if (!isHighest) {
-    return new ResultObject(ResultCode.PRODUCT_NEED_ADMIN_PERMISSION);
+    return new ResultObject(ResultCode.NEED_ADMIN_PERMISSION);
   }
 
   try {

@@ -1,7 +1,7 @@
 const router = require("express").Router();
 const passport = require("passport");
 const { UserController } = require("../controllers");
-const { handlePromise } = require("../util");
+const { handleResponse } = require("../util");
 
 router.use((req, res, next) => {
   console.log("A request is coming in to auth.js");
@@ -18,11 +18,11 @@ router.get("/testApi", (req, res) => {
 });
 
 router.post("/register", (req, res) => {
-  handlePromise(UserController.register(req), res);
+  handleResponse(UserController.register(req), res);
 });
 
 router.post("/login", (req, res) => {
-  handlePromise(UserController.login(req.body), res);
+  handleResponse(UserController.login(req.body), res);
 });
 
 // TODO 登入驗證Middleware，待測試
@@ -48,15 +48,16 @@ router.get(
 router.get(
   "/auth/google/redirect",
   passport.authenticate("google", {
-    successRedirect: process.env.CLIENT_DOMAIN, // passport會驗證是否成功,是的話就導向首頁
+    successRedirect: `${process.env.CLIENT_DOMAIN}/profile`, // passport會驗證是否成功,是的話就導向首頁
     failureRedirect: "/users/login", // 失敗則倒回登入頁面
-    session: false,
+    // session: false,
   }),
 );
 
-router.post("/logout", (req, res) => {
+router.get("/logout", (req, res) => {
   req.logout();
-  res.send("logout success");
+  console.log("logout success");
+  res.redirect(process.env.CLIENT_DOMAIN);
 });
 
 module.exports = router;

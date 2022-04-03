@@ -3,6 +3,8 @@ const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+
+dotenv.config();
 const passport = require("passport");
 const cookieSession = require("cookie-session");
 const server = require("http").createServer(app);
@@ -16,7 +18,6 @@ const {
   orderRoute,
 } = require("./routes");
 
-dotenv.config();
 
 const corsOptions = {
   origin: process.env.CLIENT_DOMAIN,

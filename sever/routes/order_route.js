@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const passport = require("passport");
 const { OrderController, UserController } = require("../controllers");
-const { handlePromise } = require("../util");
+const { ResultCode } = require("../result-code");
+const { handleResponse } = require("../util");
 
 router.use((req, res, next) => {
   console.log("A request is coming into order route");
@@ -15,17 +16,17 @@ router.post("/:productId", passport.authenticate("jwt", { session: false }), asy
   const { productId } = req.params;
   try {
     const buyResult = await UserController.buyProduct(req.user._id, productId);
-    if (buyResult.statusCode !== 200) {
-      res.status(400).send(buyResult);
+    if (buyResult.code !== 200) {
+      res.status(buyResult.code).send(buyResult);
     }
     const orderResult = await OrderController.createOrder(req.user._id, productId);
-    if (orderResult.statusCode !== 200) {
-      res.status(400).send(orderResult);
+    if (orderResult.code !== 200) {
+      res.status(orderResult.code).send(orderResult);
     }
-    res.send({ message: "success", result: [orderResult, buyResult] });
+    res.send({ code: 200, message: "success", data: [orderResult, buyResult] });
   } catch (err) {
     console.log(err);
-    res.status(500).send(err);
+    res.status(ResultCode.UNEXPECTED_ERROR).send(err);
   }
 });
 
@@ -33,7 +34,7 @@ router.post("/:productId", passport.authenticate("jwt", { session: false }), asy
  * 取得用戶清單
  */
 router.get("/", passport.authenticate("jwt", { session: false }), (req, res) => {
-  handlePromise(OrderController.getOrders(req.user._id), res);
+  handleResponse(OrderController.getOrders(req.user._id), res);
 });
 
 module.exports = router;
