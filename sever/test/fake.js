@@ -17,8 +17,17 @@ const coureseTestPost = {
   price: "300",
 };
 
+const ProductCreateTest = {
+  product_name: "測試1",
+  product_price: 50,
+  product_des: "測試貼圖",
+  product_category: "gift",
+  product_shelves: true,
+};
+
 module.exports = {
   loginTestPost,
   registerTestPost,
   coureseTestPost,
+  ProductCreateTest,
 };

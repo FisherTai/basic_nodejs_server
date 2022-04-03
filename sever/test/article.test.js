@@ -1,20 +1,20 @@
 /* eslint-disable no-underscore-dangle */
 const { expect } = require("chai");
 const supertest = require("supertest");
-const assert = require("assert");
-const mock = require("./mock");
+const fake = require("./fake");
 
 // require("../index");
 
 const api = supertest("http://localhost:8080"); // 定義測試的 API 路徑
 let APItoken; // 全域變數等待 before() 取得 Token
+let ProductTestId;
 
 // before() 測試開始前會先跑完裡面內容
 before((done) => {
   api
     .post("/api/user/login") // 登入測試
     .set("Accept", "application/json")
-    .send(mock.loginTestPost)
+    .send(fake.loginTestPost)
     .expect(200)
     .end((err, res) => {
       APItoken = res.body.token; // 登入成功取得 JWT
@@ -54,3 +54,89 @@ describe("Course", () => {
       .expect(200, done);
   });
 });
+
+// describe("user", () => {});
+
+describe("product", () => {
+  it("test get product list", (done) => {
+    api
+      .get("/api/product") // 測試取得所有課程
+      .set("Authorization", `${APItoken}`) // 將 Bearer Token 放入 Header 中的 Authorization
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        console.log(res.body);
+        expect(res.body).to.have.property("code");
+        expect(res.body).to.have.property("message");
+        expect(res.body).to.have.property("data");
+        done();
+      });
+  });
+
+  it("test create product", (done) => {
+    api
+      .post("/api/product")
+      .set("Authorization", `${APItoken}`)
+      .send(fake.ProductCreateTest)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        console.log(res.body);
+        expect(res.body).to.have.property("code");
+        expect(res.body).to.have.property("message");
+        expect(res.body).to.have.property("data");
+        ProductTestId = (res.body).data._id;
+        done();
+      });
+  });
+
+  it("test get product", (done) => {
+    api
+      .get(`/api/product/${ProductTestId}`)
+      .set("Authorization", `${APItoken}`)
+      .send(fake.ProductCreateTest)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        console.log(res.body);
+        expect(res.body).to.have.property("code");
+        expect(res.body).to.have.property("message");
+        expect(res.body).to.have.property("data");
+        done();
+      });
+  });
+
+  it("test edit product", (done) => {
+    api
+      .patch(`/api/product/${ProductTestId}`)
+      .set("Authorization", `${APItoken}`)
+      .send(fake.ProductCreateTest)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        console.log(res.body);
+        expect(res.body).to.have.property("code");
+        expect(res.body).to.have.property("message");
+        expect(res.body).to.have.property("data");
+        done();
+      });
+  });
+
+  it("test delete product", (done) => {
+    api
+      .delete(`/api/product/${ProductTestId}`)
+      .set("Authorization", `${APItoken}`)
+      .send(fake.ProductCreateTest)
+      .expect(200)
+      .end((err, res) => {
+        if (err) done(err);
+        console.log(res.body);
+        expect(res.body).to.have.property("code");
+        expect(res.body).to.have.property("message");
+        expect(res.body).to.have.property("data");
+        done();
+      });
+  });
+});
+
+describe("order", () => {});
