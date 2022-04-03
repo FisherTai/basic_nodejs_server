@@ -19,6 +19,11 @@ const {
 
 dotenv.config();
 
+const corsOptions = {
+  origin: "http://localhost:3000",
+  optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
 require("./config/passport").passport_jwt(passport);
 require("./config/passport").passport_oAuth_google(passport);
 require("./config/passport").passport_serializeUser(passport);
@@ -38,7 +43,7 @@ mongoose
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors(corsOptions));
 /* cookieSession for google-oAuth */
 app.use(
   cookieSession({
@@ -49,7 +54,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 /*------------------------------*/
 app.use("/api/user", authRoute);
-app.use("/api/user/auth", oAuthRoute);
+// app.use("/api/user/auth", oAuthRoute);
 app.use(
   "/api/courese",
   passport.authenticate("jwt", { session: false }),
