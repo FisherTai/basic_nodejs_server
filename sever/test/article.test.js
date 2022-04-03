@@ -1,16 +1,19 @@
 /* eslint-disable no-underscore-dangle */
 const { expect } = require("chai");
 const supertest = require("supertest");
+const dotenv = require("dotenv");
 const fake = require("./fake");
-
 // require("../index");
+dotenv.config();
 
-const api = supertest("http://localhost:8080"); // 定義測試的 API 路徑
+const api = supertest(process.env.SERVER_DOMAIN); // 定義測試的 API 路徑
 let APItoken; // 全域變數等待 before() 取得 Token
 let ProductTestId;
 
 // before() 測試開始前會先跑完裡面內容
-before((done) => {
+// eslint-disable-next-line prefer-arrow-callback
+before(function (done) {
+  this.timeout(10000);
   api
     .post("/api/user/login") // 登入測試
     .set("Accept", "application/json")
@@ -85,7 +88,7 @@ describe("product", () => {
         expect(res.body).to.have.property("code");
         expect(res.body).to.have.property("message");
         expect(res.body).to.have.property("data");
-        ProductTestId = (res.body).data._id;
+        ProductTestId = res.body.data._id;
         done();
       });
   });

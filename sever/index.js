@@ -12,7 +12,6 @@ const cors = require("cors");
 const {
   authRoute,
   courseRoute,
-  oAuthRoute,
   productRoute,
   orderRoute,
 } = require("./routes");
@@ -20,7 +19,7 @@ const {
 dotenv.config();
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: process.env.CLIENT_DOMAIN,
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
@@ -54,7 +53,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 /*------------------------------*/
 app.use("/api/user", authRoute);
-// app.use("/api/user/auth", oAuthRoute);
 app.use(
   "/api/courese",
   passport.authenticate("jwt", { session: false }),
