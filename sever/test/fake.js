@@ -8,7 +8,6 @@ const registerTestPost = {
   username: "",
   email: "",
   password: "a12345",
-  role: "normal",
 };
 // /api/courese/
 const coureseTestPost = {
