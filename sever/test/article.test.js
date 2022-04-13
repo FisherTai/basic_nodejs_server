@@ -2,7 +2,7 @@
 const { expect } = require("chai");
 const supertest = require("supertest");
 const dotenv = require("dotenv");
-const fake = require("./fake");
+const testParam = require("./testParam");
 // require("../index");
 dotenv.config();
 
@@ -17,7 +17,7 @@ before(function (done) {
   api
     .post("/api/user/login") // 登入測試
     .set("Accept", "application/json")
-    .send(fake.loginTestPost)
+    .send(testParam.loginTestPost)
     .expect(200)
     .end((err, res) => {
       APItoken = res.body.token; // 登入成功取得 JWT
@@ -80,7 +80,7 @@ describe("product", () => {
     api
       .post("/api/product")
       .set("Authorization", `${APItoken}`)
-      .send(fake.ProductCreateTest)
+      .send(testParam.ProductCreateTest)
       .expect(200)
       .end((err, res) => {
         if (err) done(err);
@@ -97,7 +97,7 @@ describe("product", () => {
     api
       .get(`/api/product/${ProductTestId}`)
       .set("Authorization", `${APItoken}`)
-      .send(fake.ProductCreateTest)
+      .send(testParam.ProductCreateTest)
       .expect(200)
       .end((err, res) => {
         if (err) done(err);
@@ -129,7 +129,7 @@ describe("product", () => {
     api
       .delete(`/api/product/${ProductTestId}`)
       .set("Authorization", `${APItoken}`)
-      .send(fake.ProductCreateTest)
+      .send(testParam.ProductCreateTest)
       .expect(200)
       .end((err, res) => {
         if (err) done(err);
