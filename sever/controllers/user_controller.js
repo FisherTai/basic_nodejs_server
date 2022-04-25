@@ -5,6 +5,21 @@ const { User, Product } = require("../models");
 const ResultObject = require("../result-object");
 const { ResultCode } = require("../result-code");
 
+const getAllUsers = async (_id) => {
+  try {
+    const users = await User.find({ _id: { $ne: _id } }).select([
+      "email",
+      "username",
+      "avatarImage",
+      "_id",
+    ]);
+    return new ResultObject(ResultCode.SUCCESS, users);
+  } catch (err) {
+    console.log(err);
+    return new ResultObject(ResultCode.UNEXPECTED_ERROR);
+  }
+};
+
 /**
  * Website register
  * @param {*request from router} req
@@ -151,4 +166,5 @@ module.exports = {
   register,
   googleAccountLogin,
   buyProduct,
+  getAllUsers,
 };

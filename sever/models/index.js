@@ -4,4 +4,5 @@ module.exports = {
   Course: require("./course_model"),
   Order: require("./order_model"),
   Product: require("./product_model"),
+  Messages: require("./message_model"),
 };

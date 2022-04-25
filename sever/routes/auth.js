@@ -8,6 +8,11 @@ router.use((req, res, next) => {
   next();
 });
 
+router.get("/:_id", (req, res) => {
+  const { _id } = req.params;
+  handleResponse(UserController.getAllUsers(_id), res);
+});
+
 router.get("/testApi", (req, res) => {
   const msgObj = {
     message: "Test APi is working.",
@@ -54,10 +59,17 @@ router.get(
   }),
 );
 
-router.get("/logout", (req, res) => {
+router.post("/logout/:_id", (req, res) => {
+  const { _id } = req.params;
+  if (!_id) {
+    res.json({ msg: "User id is required " });
+    return;
+  }
+  // eslint-disable-next-line no-undef
+  onlineUsers.delete(_id);
   req.logout();
   console.log("logout success");
-  res.redirect(process.env.CLIENT_DOMAIN);
+  res.status(200).send();
 });
 
 module.exports = router;
